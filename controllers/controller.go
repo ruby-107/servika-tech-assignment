@@ -15,13 +15,11 @@ func ListPets(w http.ResponseWriter, r *http.Request) {
 	// Get the optional query parameter "species"
 	species := r.URL.Query().Get("species")
 
-	// Prepare the filter based on the species parameter
 	filter := bson.M{}
 	if species != "" {
 		filter["species"] = species
 	}
 
-	// Find pets in MongoDB
 	petCollection := db.Database.Collection("pets")
 	cur, err := petCollection.Find(context.TODO(), filter)
 	if err != nil {
@@ -40,7 +38,6 @@ func ListPets(w http.ResponseWriter, r *http.Request) {
 		pets = append(pets, pet)
 	}
 
-	// Respond with the list of pets
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pets)
 }
@@ -52,7 +49,6 @@ func CreatePet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Save the pet to MongoDB
 	collection := db.Database.Collection("pets")
 	_, err := collection.InsertOne(context.TODO(), pet)
 	if err != nil {
@@ -60,7 +56,6 @@ func CreatePet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond with the created pet
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pet)
 }
@@ -69,7 +64,6 @@ func GetPetAndEvents(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	// Retrieve the pet by ID from MongoDB
 	pet := models.Pet{}
 	collection := db.Database.Collection("pets")
 	err := collection.FindOne(context.TODO(), bson.M{"id": id}).Decode(&pet)
@@ -92,7 +86,6 @@ func EditPet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update the pet in MongoDB
 	collection := db.Database.Collection("pets")
 	filter := bson.M{"id": id}
 	update := bson.M{"$set": updatedPet}
@@ -102,7 +95,6 @@ func EditPet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond with the updated pet
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updatedPet)
 }
@@ -117,7 +109,6 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if the pet exists
 	petCollection := db.Database.Collection("pets")
 	petFilter := bson.M{"id": id}
 	pet := models.Pet{}
@@ -127,7 +118,6 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Add the new event to the pet's events
 	pet.Events = append(pet.Events, newEvent)
 
 	// Update the pet in MongoDB with the new event
@@ -147,7 +137,6 @@ func DeletePet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	// Delete the pet by ID from MongoDB
 	collection := db.Database.Collection("pets")
 	_, err := collection.DeleteOne(context.TODO(), bson.M{"id": id})
 	if err != nil {
@@ -155,7 +144,6 @@ func DeletePet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond with a success message
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Pet deleted successfully"))
 }
